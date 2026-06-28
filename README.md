@@ -17,3 +17,6 @@ enter project details →
 update progress manually →
 AI monitors proactively, alerts risks/blockers →
 upon completion, AI generates summary report.
+
+WEb:
+file:///d%3A/Code/python/AIWorkflowOrganizer/taskWed/index.html
