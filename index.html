@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Project System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef0ea;
+            margin: 0;
+            padding: 28px;
+            color: #202020;
+        }
+
+        .page { display: none; }
+        .active { display: block; }
+
+        h1, h2, h3, p {
+            margin-top: 0;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            padding: 7px 13px;
+            border-radius: 6px;
+            background: #66764f;
+            color: white;
+            font-size: 13px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .app-title {
+            font-size: 32px;
+            margin-bottom: 18px;
+        }
+
+        .recommend-box {
+            background: #74796f;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .recommend-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 14px;
+            color: #111;
+            background: #dfe2d8;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .recommend-row {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            padding: 6px 2px 10px;
+        }
+
+        .recommend-card {
+            background: white;
+            min-width: 145px;
+            height: 125px;
+            padding: 12px;
+            border-radius: 8px;
+            position: relative;
+            font-size: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+        }
+
+        .x-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #9b1c1c;
+            color: white;
+            font-size: 11px;
+            padding: 0;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 9px;
+            background: #e5e5e5;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #5f8d3e;
+        }
+
+        .small-muted {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .project-row {
+            border: 1px solid #aaa;
+            background: white;
+            border-radius: 8px;
+            padding: 14px;
+            margin: 12px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .project-row-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .project-name {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .delete-btn {
+            background: #9b1c1c;
+        }
+
+        .fab {
+            position: fixed;
+            right: 28px;
+            bottom: 25px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            font-size: 30px;
+            line-height: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+
+        .dashboard-layout {
+            display: flex;
+            gap: 22px;
+            align-items: stretch;
+        }
+
+        .left-panel {
+            width: 64%;
+            background: #f8f8f5;
+            padding: 18px;
+            border-radius: 10px;
+            min-height: 600px;
+        }
+
+        .right-panel {
+            width: 36%;
+            background: #c8c5bd;
+            min-height: 600px;
+            padding: 16px;
+            border-radius: 10px;
+        }
+
+        .back-btn {
+            background: transparent;
+            color: black;
+            font-size: 24px;
+            padding: 0;
+            margin-bottom: 12px;
+        }
+
+        .title-center {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        textarea {
+            width: 92%;
+            height: 82px;
+            padding: 12px;
+            resize: none;
+            border: 1px solid #aaa;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+        }
+
+        .done-btn {
+            margin-left: 8px;
+            vertical-align: top;
+            height: 38px;
+        }
+
+        .edit-area {
+            text-align: right;
+            margin: 16px 0;
+        }
+
+        .step {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .step-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .step-title {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .step-desc {
+            margin: 6px 0 0 30px;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .edit-input {
+            width: 90%;
+            padding: 7px;
+            margin: 5px 0;
+            border: 1px solid #aaa;
+            border-radius: 6px;
+        }
+
+        .side-card {
+            background: #efeee9;
+            border-radius: 8px;
+            padding: 13px;
+            margin-bottom: 12px;
+            min-height: 125px;
+            font-size: 13px;
+            line-height: 1.45;
+            white-space: pre-line;
+        }
+
+        .side-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .map-section {
+            background: #777;
+            height: 150px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .empty-text {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="allProjects" class="page active">
+    <h1 class="app-title">All Projects</h1>
+
+    <div class="recommend-box">
+        <div class="recommend-title">Recommended first tasks</div>
+        <div id="recommendedRow" class="recommend-row"></div>
+    </div>
+
+    <div id="projectList"></div>
+
+    <button class="fab" onclick="createProject()">+</button>
+</div>
+
+<div id="dashboard" class="page">
+    <button class="back-btn" onclick="leaveProject()">←</button>
+
+    <div class="dashboard-layout">
+        <div class="left-panel">
+            <h2 class="title-center" id="projectTitle">TITLE</h2>
+
+            <h2>Write your project details</h2>
+            <textarea id="goalInput"></textarea>
+            <button class="done-btn" onclick="generate()">Done</button>
+
+            <div class="edit-area">
+                <button onclick="enableAllEdit()">Edit</button>
+            </div>
+
+            <div id="taskContainer"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="side-card">
+                <div class="side-title">Analysis</div>
+                <div id="analysisText">No analysis yet.</div>
+            </div>
+
+            <div class="side-card">
+                <div class="side-title">Suggestion & Reason</div>
+                <div id="suggestionText">No suggestion yet.</div>
+            </div>
+
+            <div class="side-card">
+                <div class="side-title">Risk</div>
+                <div id="riskText">No risk detected.</div>
+            </div>
+
+            <div class="map-section">
+                MAP
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+let currentProject = null;
+let currentTasks = [];
+let editMode = {};
+
+renderProjects();
+
+function save() {
+    localStorage.setItem("projects", JSON.stringify(projects));
+}
+
+function showPage(id) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+function createProject() {
+    currentProject = {
+        id: Date.now(),
+        goal: "",
+        summary: "",
+        tasks: [],
+        analysis: "No analysis yet.",
+        suggestion: "No suggestion yet.",
+        risk: "No risk detected."
+    };
+
+    projects.push(currentProject);
+    save();
+    openDashboard(currentProject.id);
+}
+
+function openDashboard(id) {
+    currentProject = projects.find(p => p.id === id);
+    currentTasks = currentProject.tasks || [];
+    editMode = {};
+    showPage("dashboard");
+    renderDashboard();
+}
+
+function leaveProject() {
+    syncCurrentProject();
+    save();
+    showPage("allProjects");
+    renderProjects();
+}
+
+function syncCurrentProject() {
+    if (!currentProject) return;
+    currentProject.tasks = currentTasks;
+}
+
+function generate() {
+    const goal = document.getElementById("goalInput").value.trim();
+
+    if (!goal) {
+        alert("Please write project details first.");
+        return;
+    }
+
+    currentProject.goal = goal;
+    document.getElementById("analysisText").innerText = "Generating analysis...";
+    document.getElementById("suggestionText").innerText = "Generating suggestions...";
+    document.getElementById("riskText").innerText = "Checking risks...";
+
+    fetch("http://127.0.0.1:5000/generate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ goal })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.need_clarification) {
+            currentProject.summary = "AI needs more information.";
+            currentProject.analysis = "The input is not clear enough yet.";
+            currentProject.suggestion = (data.questions || []).map(q => "- " + q).join("\n");
+            currentProject.risk = "Project planning may be inaccurate without more details.";
+            currentProject.tasks = [];
+            currentTasks = [];
+            save();
+            renderDashboard();
+            return;
+        }
+
+        applyGeneratedData(data, goal);
+    })
+    .catch(() => {
+        const fallback = {
+            project_summary: "This project has been generated with fallback demo data.",
+            tasks: [
+                {id:"1", title:"Clarify project requirements", description:"Decide what the project must achieve.", priority:1, status:"todo"},
+                {id:"2", title:"Break project into steps", description:"Create manageable steps for execution.", priority:2, status:"todo"},
+                {id:"3", title:"Build first working version", description:"Focus on the core demo flow.", priority:3, status:"todo"}
+            ],
+            analysis: {
+                complexity: "medium",
+                total_time_estimate: "1 day",
+                risks: [
+                    {
+                        issue: "Time pressure",
+                        reason: "The project has many planned features but limited development time.",
+                        impact: "Some advanced features may need to be simplified."
+                    }
+                ]
+            },
+            suggestions: [
+                {
+                    suggestion: "Focus on one complete demo flow first.",
+                    reason: "A stable flow is better than many unfinished features.",
+                    expected_effect: "The project will be easier to present and record."
+                }
+            ]
+        };
+
+        applyGeneratedData(fallback, goal);
+    });
+}
+
+function applyGeneratedData(data, goal) {
+    currentTasks = (data.tasks || []).map((t, index) => ({
+        id: String(t.id || index + 1),
+        title: t.title || "Untitled task",
+        description: t.description || "No description",
+        priority: t.priority || index + 1,
+        status: t.status || "todo"
+    }));
+
+    currentProject.goal = goal;
+    currentProject.summary = data.project_summary || "No summary.";
+    currentProject.tasks = currentTasks;
+
+    currentProject.analysis = formatAnalysis(data.analysis);
+    currentProject.suggestion = formatSuggestions(data.suggestions);
+    currentProject.risk = formatRisks(data.analysis);
+
+    syncCurrentProject();
+    save();
+    renderDashboard();
+}
+
+function formatAnalysis(analysis) {
+    if (!analysis) return "Basic project analysis generated.";
+
+    if (typeof analysis === "string") return analysis;
+
+    let lines = [];
+
+    if (analysis.complexity) {
+        lines.push("Complexity: " + analysis.complexity);
+    }
+
+    if (analysis.total_time_estimate) {
+        lines.push("Estimated time: " + analysis.total_time_estimate);
+    }
+
+    if (analysis.bottlenecks && analysis.bottlenecks.length) {
+        lines.push("");
+        lines.push("Bottlenecks:");
+        analysis.bottlenecks.forEach(b => {
+            lines.push("- " + (b.reason || b.issue || "Possible bottleneck"));
+        });
+    }
+
+    if (!lines.length) {
+        lines.push("The project is understandable and can be broken into executable tasks.");
+    }
+
+    return lines.join("\n");
+}
+
+function formatSuggestions(suggestions) {
+    if (!suggestions || !suggestions.length) {
+        return "Start with the highest priority task.";
+    }
+
+    return suggestions.map((s, index) => {
+        if (typeof s === "string") return (index + 1) + ". " + s;
+
+        let text = (index + 1) + ". " + (s.suggestion || s.change || s.description || "Suggestion");
+
+        if (s.reason) {
+            text += "\nReason: " + s.reason;
+        }
+
+        if (s.expected_effect) {
+            text += "\nExpected effect: " + s.expected_effect;
+        }
+
+        return text;
+    }).join("\n\n");
+}
+
+function formatRisks(analysis) {
+    const risks = analysis?.risks || [];
+
+    if (!risks.length) {
+        return "No major risk detected.";
+    }
+
+    return risks.map((r, index) => {
+        if (typeof r === "string") return (index + 1) + ". " + r;
+
+        let text = (index + 1) + ". " + (r.issue || "Risk");
+
+        if (r.reason) {
+            text += "\nReason: " + r.reason;
+        }
+
+        if (r.impact) {
+            text += "\nImpact: " + r.impact;
+        }
+
+        return text;
+    }).join("\n\n");
+}
+
+function renderDashboard() {
+    document.getElementById("projectTitle").innerText =
+        currentProject?.goal || "TITLE";
+
+    document.getElementById("goalInput").value =
+        currentProject?.goal || "";
+
+    document.getElementById("analysisText").innerText =
+        currentProject?.analysis || "No analysis yet.";
+
+    document.getElementById("suggestionText").innerText =
+        currentProject?.suggestion || "No suggestion yet.";
+
+    document.getElementById("riskText").innerText =
+        currentProject?.risk || "No risk detected.";
+
+    const container = document.getElementById("taskContainer");
+    container.innerHTML = "";
+
+    if (!currentTasks.length) {
+        container.innerHTML = "<p class='empty-text'>No tasks yet. Write details and click Done.</p>";
+        return;
+    }
+
+    currentTasks.forEach((t, index) => {
+        const isEdit = editMode[t.id] === true;
+
+        container.innerHTML += `
+            <div class="step">
+                <div class="step-line">
+                    <input type="checkbox" ${t.status === "done" ? "checked" : ""}
+                        onchange="toggleDone('${t.id}')">
+
+                    ${isEdit ? `
+                        <div style="width:100%">
+                            <input class="edit-input" id="title-${t.id}" value="${escapeHtml(t.title)}">
+                            <input class="edit-input" id="desc-${t.id}" value="${escapeHtml(t.description)}">
+                            <button onclick="saveEdit('${t.id}')">Save</button>
+                        </div>
+                    ` : `
+                        <div>
+                            <div class="step-title">Step ${index + 1}: ${escapeHtml(t.title)}</div>
+                            <div class="step-desc">${escapeHtml(t.description)}</div>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    });
+}
+
+function enableAllEdit() {
+    currentTasks.forEach(t => editMode[t.id] = true);
+    renderDashboard();
+}
+
+function saveEdit(id) {
+    const title = document.getElementById(`title-${id}`).value;
+    const desc = document.getElementById(`desc-${id}`).value;
+
+    currentTasks = currentTasks.map(t => {
+        if (t.id === id) {
+            t.title = title;
+            t.description = desc;
+        }
+        return t;
+    });
+
+    editMode[id] = false;
+    syncCurrentProject();
+    save();
+    renderDashboard();
+}
+
+function toggleDone(id) {
+    currentTasks = currentTasks.map(t => {
+        if (t.id === id) {
+            t.status = t.status === "done" ? "todo" : "done";
+        }
+        return t;
+    });
+
+    syncCurrentProject();
+    save();
+    renderDashboard();
+}
+
+function renderProjects() {
+    const rec = document.getElementById("recommendedRow");
+    const list = document.getElementById("projectList");
+
+    rec.innerHTML = "";
+    list.innerHTML = "";
+
+    const recommended = projects
+        .slice()
+        .sort((a, b) => getProgress(a) - getProgress(b))
+        .slice(0, 5);
+
+    if (!recommended.length) {
+        rec.innerHTML = "<p style='color:white'>No recommended projects</p>";
+    }
+
+    recommended.forEach(p => {
+        rec.innerHTML += `
+            <div class="recommend-card">
+                <button class="x-btn" onclick="deleteProject(${p.id})">x</button>
+                <b>${shortText(p.goal || "Untitled", 14)}</b>
+
+                <div class="progress-track">
+                    <div class="progress-fill" style="width:${getProgress(p)}%;"></div>
+                </div>
+
+                <div class="small-muted">${getProgress(p)}% completed</div>
+
+                <button
+                    style="position:absolute;bottom:8px;left:12px;width:95px;font-size:10px;padding:4px;"
+                    onclick="openDashboard(${p.id})">
+                    Open
+                </button>
+            </div>
+        `;
+    });
+
+    projects.forEach(p => {
+        const progress = getProgress(p);
+
+        list.innerHTML += `
+            <div class="project-row">
+                <div class="project-row-top">
+                    <div>
+                        <div class="project-name">${escapeHtml(p.goal || "Untitled Project")}</div>
+                        <p class="status-text">Status: ${getStatus(p)}</p>
+                    </div>
+
+                    <div class="project-actions">
+                        <button onclick="openDashboard(${p.id})">Open</button>
+                        <button class="delete-btn" onclick="deleteProject(${p.id})">Delete</button>
+                    </div>
+                </div>
+
+                <div class="progress-track">
+                    <div class="progress-fill" style="width:${progress}%;"></div>
+                </div>
+
+                <div class="small-muted">${progress}% completed</div>
+            </div>
+        `;
+    });
+}
+
+function deleteProject(id) {
+    projects = projects.filter(p => p.id !== id);
+
+    if (currentProject && currentProject.id === id) {
+        currentProject = null;
+        currentTasks = [];
+        showPage("allProjects");
+    }
+
+    save();
+    renderProjects();
+}
+
+function getProgress(project) {
+    if (!project?.tasks?.length) return 0;
+    const done = project.tasks.filter(t => t.status === "done").length;
+    return Math.round((done / project.tasks.length) * 100);
+}
+
+function getStatus(project) {
+    const p = getProgress(project);
+    if (p === 100) return "complete";
+    if (p === 0) return "not complete";
+    if (p < 40) return "late";
+    return "in progress";
+}
+
+function shortText(text, limit) {
+    return String(text || "").length > limit ? String(text).slice(0, limit) + "..." : text;
+}
+
+function escapeHtml(text) {
+    return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Project System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f6fa;
+            padding: 20px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 6px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===================== -->
+<!-- ALL PROJECTS PAGE -->
+<!-- ===================== -->
+<div id="allProjects" class="page active">
+
+    <h2>All Projects</h2>
+
+    <button onclick="createProject()">+ New Project</button>
+
+    <div id="projectList"></div>
+
+</div>
+
+<!-- ===================== -->
+<!-- DASHBOARD PAGE -->
+<!-- ===================== -->
+<div id="dashboard" class="page">
+
+    <button onclick="leaveProject()">← Leave</button>
+
+    <h2>Dashboard</h2>
+
+    <input id="goalInput" placeholder="Enter goal">
+    <button onclick="generate()">Generate</button>
+
+    <div class="card">
+        <h3>Summary</h3>
+        <div id="summary"></div>
+    </div>
+
+    <div class="card">
+        <h3>Tasks</h3>
+        <div id="taskContainer"></div>
+    </div>
+
+</div>
+
+<script>
+
+// =====================
+// DATA
+// =====================
+let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+let currentProject = null;
+let currentTasks = [];
+
+// =====================
+// PAGE SWITCH
+// =====================
+function showPage(pageId) {
+
+    document.querySelectorAll(".page").forEach(p => {
+        p.classList.remove("active");
+    });
+
+    document.getElementById(pageId).classList.add("active");
+}
+
+// =====================
+// INIT
+// =====================
+renderProjects();
+
+// =====================
+// CREATE PROJECT
+// =====================
+function createProject() {
+
+    currentProject = {
+        id: Date.now(),
+        goal: "",
+        summary: "",
+        tasks: []
+    };
+
+    projects.push(currentProject);
+    save();
+
+    openDashboard(currentProject.id);
+}
+
+// =====================
+// OPEN DASHBOARD
+// =====================
+function openDashboard(id) {
+
+    currentProject = projects.find(p => p.id === id);
+    currentTasks = currentProject.tasks;
+
+    showPage("dashboard");
+    renderDashboard();
+}
+
+// =====================
+// LEAVE DASHBOARD
+// =====================
+function leaveProject() {
+
+    save();
+    showPage("allProjects");
+    renderProjects();
+}
+
+// =====================
+// GENERATE
+// =====================
+function generate() {
+
+    const goal = document.getElementById("goalInput").value;
+    currentProject.goal = goal;
+
+    fetch("http://127.0.0.1:5000/generate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({goal})
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        currentTasks = data.tasks || [];
+
+        currentProject.summary = data.project_summary || "";
+        currentProject.tasks = currentTasks;
+
+        save();
+        renderDashboard();
+    })
+    .catch(() => {
+
+        currentTasks = [
+            {id:"1", title:"Task A", priority:1, status:"todo"},
+            {id:"2", title:"Task B", priority:2, status:"todo"}
+        ];
+
+        currentProject.summary = "Mock project";
+        currentProject.tasks = currentTasks;
+
+        save();
+        renderDashboard();
+    });
+}
+
+// =====================
+// DASHBOARD
+// =====================
+function renderDashboard() {
+
+    document.getElementById("summary").innerText =
+        currentProject?.summary || "";
+
+    let container = document.getElementById("taskContainer");
+    container.innerHTML = "";
+
+    currentTasks.forEach(t => {
+
+        container.innerHTML += `
+            <div class="card">
+                <b>${t.title}</b>
+                <p>Priority: ${t.priority}</p>
+                <p>Status: ${t.status || "todo"}</p>
+            </div>
+        `;
+    });
+}
+
+// =====================
+// ALL PROJECTS UI
+// =====================
+function renderProjects() {
+
+    let container = document.getElementById("projectList");
+    container.innerHTML = "";
+
+    // =========================
+    // RECOMMENDED SECTION
+    // =========================
+    container.innerHTML += `
+        <h3>Recommended first tasks</h3>
+
+        <div style="
+            display:flex;
+            overflow-x:auto;
+            gap:10px;
+            padding:10px;
+            border-bottom:1px solid #ddd;
+        ">
+    `;
+
+    let recommended = projects
+        .slice()
+        .sort((a, b) => getProgress(a) - getProgress(b))
+        .slice(0, 8);
+
+    if (recommended.length === 0) {
+        container.innerHTML += `<p>No recommended projects</p>`;
+    }
+
+    recommended.forEach(p => {
+
+        container.innerHTML += `
+            <div class="card" style="min-width:180px; position:relative;">
+
+                <!-- DELETE X -->
+                <button onclick="deleteProject(${p.id})"
+                    style="
+                        position:absolute;
+                        top:5px;
+                        right:5px;
+                        width:20px;
+                        height:20px;
+                        border:none;
+                        border-radius:50%;
+                        background:red;
+                        color:white;
+                        cursor:pointer;
+                    ">
+                    x
+                </button>
+
+                <b>${p.goal || "Untitled"}</b>
+
+                <p>${getProgress(p)}% completed</p>
+
+                <button onclick="openDashboard(${p.id})">Open</button>
+            </div>
+        `;
+    });
+
+    container += `</div>`;
+
+    // =========================
+    // ALL PROJECTS
+    // =========================
+    container.innerHTML += `
+        <h3 style="margin-top:20px;">All Projects</h3>
+
+        <div style="
+            display:flex;
+            overflow-x:auto;
+            gap:10px;
+            padding:10px;
+        ">
+    `;
+
+    projects.forEach(p => {
+
+        container.innerHTML += `
+            <div class="card" style="min-width:180px;">
+
+                <b>${p.goal || "Untitled"}</b>
+
+                <div style="background:#eee;height:8px;border-radius:5px;">
+                    <div style="
+                        width:${getProgress(p)}%;
+                        height:8px;
+                        background:green;
+                        border-radius:5px;
+                    "></div>
+                </div>
+
+                <p>${getProgress(p)}%</p>
+                <p>${getStatus(p)}</p>
+
+                <button onclick="openDashboard(${p.id})">Open</button>
+                <button onclick="deleteProject(${p.id})">Delete</button>
+            </div>
+        `;
+    });
+
+    container.innerHTML += `</div>`;
+}
+
+// =====================
+// DELETE PROJECT
+// =====================
+function deleteProject(id) {
+
+    projects = projects.filter(p => p.id !== id);
+    save();
+    renderProjects();
+}
+
+// =====================
+// HELPERS
+// =====================
+function getProgress(project) {
+
+    if (!project?.tasks?.length) return 0;
+
+    let done = project.tasks.filter(t => t.status === "done").length;
+
+    return Math.round((done / project.tasks.length) * 100);
+}
+
+function getStatus(project) {
+
+    let p = getProgress(project);
+
+    if (p === 100) return "complete";
+    if (p === 0) return "not complete";
+    if (p < 40) return "late";
+
+    return "in progress";
+}
+
+// =====================
+// SAVE
+// =====================
+function save() {
+    localStorage.setItem("projects", JSON.stringify(projects));
+}
+
+</script>
+
+</body>
+</html>
