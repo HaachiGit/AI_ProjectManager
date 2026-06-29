@@ -19,4 +19,4 @@ AI monitors proactively, alerts risks/blockers →
 upon completion, AI generates summary report.
 
 WEb:
-file:///d%3A/Code/python/AIWorkflowOrganizer/taskWed/index.html
+https://haachigit.github.io/AI_ProjectManager/
